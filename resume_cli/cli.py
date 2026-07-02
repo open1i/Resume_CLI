@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from typing import Optional
 
 import click
 from loguru import logger
@@ -18,13 +17,16 @@ from resume_cli.pdf import extract_text
 __all__ = ["main"]
 
 
+_LOG_FMT = "<green>{time:HH:mm:ss}</green> | <level>{level}</level> | {message}"
+
+
 def _configure_logging(verbose: bool) -> None:
     logger.remove()
     level = "DEBUG" if verbose else "WARNING"
-    logger.add(sys.stderr, level=level, format="<green>{time:HH:mm:ss}</green> | <level>{level}</level> | {message}")
+    logger.add(sys.stderr, level=level, format=_LOG_FMT)
 
 
-def _write_output(data: dict[str, object], output: Optional[str]) -> None:
+def _write_output(data: dict[str, object], output: str | None) -> None:
     formatted = json.dumps(data, ensure_ascii=False, indent=2)
     click.echo(formatted)
     if output:
@@ -57,7 +59,7 @@ def main() -> None:
 @click.argument("pdf_path")
 @click.option("--output", "-o", default=None, help="Save result to file")
 @click.option("--verbose", "-v", is_flag=True, help="Enable debug logging")
-def parse(pdf_path: str, output: Optional[str], verbose: bool) -> None:
+def parse(pdf_path: str, output: str | None, verbose: bool) -> None:
     """Extract raw text from a PDF resume."""
     _configure_logging(verbose)
     try:
@@ -75,7 +77,7 @@ def parse(pdf_path: str, output: Optional[str], verbose: bool) -> None:
 @click.option("--output", "-o", default=None, help="Save result to file")
 @click.option("--mock", is_flag=True, help="Return mock result (no API key needed)")
 @click.option("--verbose", "-v", is_flag=True, help="Enable debug logging")
-def extract(pdf_path: str, output: Optional[str], mock: bool, verbose: bool) -> None:
+def extract(pdf_path: str, output: str | None, mock: bool, verbose: bool) -> None:
     """Extract structured info from a PDF resume using AI."""
     _configure_logging(verbose)
     try:
@@ -94,7 +96,7 @@ def extract(pdf_path: str, output: Optional[str], mock: bool, verbose: bool) -> 
 @click.option("--output", "-o", default=None, help="Save result to file")
 @click.option("--mock", is_flag=True, help="Return mock result (no API key needed)")
 @click.option("--verbose", "-v", is_flag=True, help="Enable debug logging")
-def score(pdf_path: str, jd: str, output: Optional[str], mock: bool, verbose: bool) -> None:
+def score(pdf_path: str, jd: str, output: str | None, mock: bool, verbose: bool) -> None:
     """Score a resume against a job description using AI."""
     _configure_logging(verbose)
     try:

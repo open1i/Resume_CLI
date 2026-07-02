@@ -16,12 +16,12 @@ from resume_cli.models import ResumeInfo, ScoreResult
 
 
 def test_repair_strips_markdown_fence() -> None:
-    raw = "```json\n{\"name\": \"张三\"}\n```"
+    raw = '```json\n{"name": "张三"}\n```'
     assert _repair_json(raw) == '{"name": "张三"}'
 
 
 def test_repair_strips_prose_around_json() -> None:
-    raw = "Here is the result:\n{\"name\": \"张三\"}\nDone."
+    raw = 'Here is the result:\n{"name": "张三"}\nDone.'
     assert _repair_json(raw) == '{"name": "张三"}'
 
 
@@ -83,18 +83,22 @@ def test_extract_raises_on_api_error() -> None:
 
 def test_extract_raises_on_invalid_json() -> None:
     # 直接 mock _call_ai 跳过真实 API 调用，专注测试 JSON 解析这一层的错误处理
-    with patch("resume_cli.ai._call_ai", return_value="not json at all %%%"):
-        with pytest.raises(ValidationError, match="invalid JSON"):
-            extract_resume("some text")
+    with (
+        patch("resume_cli.ai._call_ai", return_value="not json at all %%%"),
+        pytest.raises(ValidationError, match="invalid JSON"),
+    ):
+        extract_resume("some text")
 
 
 def test_extract_raises_on_schema_mismatch() -> None:
     # education 字段期望 list，传入 string 会让 Pydantic 抛类型错误
     # 外层 patch 会被内层覆盖，内层才是真正生效的 mock
-    with patch("resume_cli.ai._call_ai", return_value='{"unexpected_field": 999}'):
-        with patch("resume_cli.ai._call_ai", return_value='{"education": "not a list"}'):
-            with pytest.raises(ValidationError, match="schema validation"):
-                extract_resume("some text")
+    with (
+        patch("resume_cli.ai._call_ai", return_value='{"unexpected_field": 999}'),
+        patch("resume_cli.ai._call_ai", return_value='{"education": "not a list"}'),
+        pytest.raises(ValidationError, match="schema validation"),
+    ):
+        extract_resume("some text")
 
 
 # ---------------------------------------------------------------------------
@@ -111,20 +115,27 @@ def test_score_mock_returns_score_result() -> None:
 
 def test_score_mock_clamps_score_over_100() -> None:
     # 验证即使 mock 数据分数超出范围，Pydantic 的 clamp_score validator 也能修正
-    with patch("resume_cli.ai._MOCK_SCORE", {**{
-        "overall_score": 150,
-        "skill_score": 88,
-        "experience_score": 80,
-        "education_score": 75,
-        "comment": "test",
-        "interview_questions": [],
-    }}):
+    with patch(
+        "resume_cli.ai._MOCK_SCORE",
+        {
+            **{
+                "overall_score": 150,
+                "skill_score": 88,
+                "experience_score": 80,
+                "education_score": 75,
+                "comment": "test",
+                "interview_questions": [],
+            }
+        },
+    ):
         result = score_resume("简历", "JD", mock=True)
         assert result.overall_score == 100
 
 
 def test_score_raises_on_schema_mismatch() -> None:
     # interview_questions 期望 list，传入 string 触发 Pydantic 校验失败
-    with patch("resume_cli.ai._call_ai", return_value='{"interview_questions": "not a list"}'):
-        with pytest.raises(ValidationError, match="schema validation"):
-            score_resume("简历", "JD")
+    with (
+        patch("resume_cli.ai._call_ai", return_value='{"interview_questions": "not a list"}'),
+        pytest.raises(ValidationError, match="schema validation"),
+    ):
+        score_resume("简历", "JD")

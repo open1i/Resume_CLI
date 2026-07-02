@@ -8,13 +8,13 @@ from pathlib import Path
 import pdfplumber
 from loguru import logger
 
-# pdfminer emits noisy FontBBox warnings for malformed font descriptors in some PDFs;
-# text extraction is unaffected so we silence them.
-logging.getLogger("pdfminer").setLevel(logging.ERROR)
-
 from resume_cli.exceptions import PDFError
 
 __all__ = ["extract_text"]
+
+# pdfminer emits noisy FontBBox warnings for malformed font descriptors in some PDFs;
+# text extraction is unaffected so we silence them.
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 
 def extract_text(pdf_path: str) -> str:
@@ -44,9 +44,7 @@ def extract_text(pdf_path: str) -> str:
     text = "\n".join(pages).strip()
 
     if not text:
-        raise PDFError(
-            "PDF contains no extractable text — it may be scanned or image-based"
-        )
+        raise PDFError("PDF contains no extractable text — it may be scanned or image-based")
 
     logger.debug("Extracted {} chars from {} page(s)", len(text), len(pages))
     return text

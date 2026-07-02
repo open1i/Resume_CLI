@@ -9,34 +9,6 @@ from click.testing import CliRunner
 
 from resume_cli.cli import main
 from resume_cli.exceptions import AIError, PDFError
-from resume_cli.models import Education, ResumeInfo, ScoreResult
-
-
-# ---------------------------------------------------------------------------
-# helpers
-# ---------------------------------------------------------------------------
-
-def _make_resume_info() -> ResumeInfo:
-    return ResumeInfo(
-        name="张三",
-        phone="138-0000-0000",
-        email="zhangsan@example.com",
-        city="杭州",
-        education=[Education(school="浙大", major="CS", degree="本科", graduation_time="2022")],
-        skills=["Python", "React"],
-    )
-
-
-def _make_score_result() -> ScoreResult:
-    return ScoreResult(
-        overall_score=82,
-        skill_score=88,
-        experience_score=80,
-        education_score=75,
-        comment="匹配度较高",
-        interview_questions=["请介绍全栈项目经验"],
-    )
-
 
 # ---------------------------------------------------------------------------
 # parse
@@ -93,8 +65,10 @@ def test_extract_pdf_error() -> None:
 
 def test_extract_ai_error() -> None:
     runner = CliRunner()
-    with patch("resume_cli.cli.extract_text", return_value="文本"), \
-         patch("resume_cli.cli.extract_resume", side_effect=AIError("API key missing")):
+    with (
+        patch("resume_cli.cli.extract_text", return_value="文本"),
+        patch("resume_cli.cli.extract_resume", side_effect=AIError("API key missing")),
+    ):
         result = runner.invoke(main, ["extract", "resume.pdf"])
     assert result.exit_code != 0
 

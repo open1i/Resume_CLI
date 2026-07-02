@@ -32,9 +32,11 @@ def test_unreadable_pdf(tmp_path: Path) -> None:
     # mock pdfplumber.open 而非真实损坏文件，避免依赖 pdfplumber 的具体错误格式
     f = tmp_path / "broken.pdf"
     f.write_bytes(b"not a real pdf")
-    with patch("pdfplumber.open", side_effect=Exception("corrupted")):
-        with pytest.raises(PDFError, match="Cannot read PDF"):
-            extract_text(str(f))
+    with (
+        patch("pdfplumber.open", side_effect=Exception("corrupted")),
+        pytest.raises(PDFError, match="Cannot read PDF"),
+    ):
+        extract_text(str(f))
 
 
 def test_empty_pdf(tmp_path: Path) -> None:
@@ -50,9 +52,11 @@ def test_empty_pdf(tmp_path: Path) -> None:
     mock_pdf.__exit__ = MagicMock(return_value=False)
     mock_pdf.pages = [mock_page]
 
-    with patch("pdfplumber.open", return_value=mock_pdf):
-        with pytest.raises(PDFError, match="no extractable text"):
-            extract_text(str(f))
+    with (
+        patch("pdfplumber.open", return_value=mock_pdf),
+        pytest.raises(PDFError, match="no extractable text"),
+    ):
+        extract_text(str(f))
 
 
 def test_success(tmp_path: Path) -> None:

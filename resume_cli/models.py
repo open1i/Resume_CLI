@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, field_validator
 from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
 
 __all__ = ["Education", "ResumeInfo", "ScoreResult"]
 
@@ -33,9 +34,12 @@ class ScoreResult(BaseModel):
     interview_questions: list[str] = Field(default_factory=list)
 
     @field_validator(
-        "overall_score", "skill_score", "experience_score", "education_score",
+        "overall_score",
+        "skill_score",
+        "experience_score",
+        "education_score",
         mode="before",
     )
     @classmethod
     def clamp_score(cls, v: Any) -> int:
-          return max(0, min(100, int(v)))
+        return max(0, min(100, int(v)))
