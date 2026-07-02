@@ -6,9 +6,9 @@ from unittest.mock import patch
 
 import pytest
 
-from resume_cli.ai import _repair_json, extract_resume
+from resume_cli.ai import _repair_json, extract_resume, score_resume
 from resume_cli.exceptions import AIError, ValidationError
-from resume_cli.models import ResumeInfo
+from resume_cli.models import ResumeInfo, ScoreResult
 
 # ---------------------------------------------------------------------------
 # _repair_json
@@ -95,3 +95,36 @@ def test_extract_raises_on_schema_mismatch() -> None:
         with patch("resume_cli.ai._call_ai", return_value='{"education": "not a list"}'):
             with pytest.raises(ValidationError, match="schema validation"):
                 extract_resume("some text")
+
+
+# ---------------------------------------------------------------------------
+# score_resume
+# ---------------------------------------------------------------------------
+
+
+def test_score_mock_returns_score_result() -> None:
+    result = score_resume("简历内容", "岗位描述", mock=True)
+    assert isinstance(result, ScoreResult)
+    assert 0 <= result.overall_score <= 100
+    assert len(result.interview_questions) >= 1
+
+
+def test_score_mock_clamps_score_over_100() -> None:
+    # 验证即使 mock 数据分数超出范围，Pydantic 的 clamp_score validator 也能修正
+    with patch("resume_cli.ai._MOCK_SCORE", {**{
+        "overall_score": 150,
+        "skill_score": 88,
+        "experience_score": 80,
+        "education_score": 75,
+        "comment": "test",
+        "interview_questions": [],
+    }}):
+        result = score_resume("简历", "JD", mock=True)
+        assert result.overall_score == 100
+
+
+def test_score_raises_on_schema_mismatch() -> None:
+    # interview_questions 期望 list，传入 string 触发 Pydantic 校验失败
+    with patch("resume_cli.ai._call_ai", return_value='{"interview_questions": "not a list"}'):
+        with pytest.raises(ValidationError, match="schema validation"):
+            score_resume("简历", "JD")
