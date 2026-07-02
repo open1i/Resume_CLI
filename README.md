@@ -112,7 +112,7 @@ resume-cli parse resume.pdf
 ```json
 {
   "char_count": 3687,
-  "text": "李子威 - 前端开发工程师\n男/1998.10 ..."
+  "text": "张三 - 前端开发工程师\n男/1998.10 ..."
 }
 ```
 
@@ -132,7 +132,7 @@ resume-cli extract resume.pdf
 
 ```json
 {
-  "name": "李子威",
+  "name": "张三",
   "phone": "15235803633",
   "email": "li1348313766@163.com",
   "city": "",
