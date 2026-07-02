@@ -2,10 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 import pdfplumber
 from loguru import logger
+
+# pdfminer emits noisy FontBBox warnings for malformed font descriptors in some PDFs;
+# text extraction is unaffected so we silence them.
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 from resume_cli.exceptions import PDFError
 

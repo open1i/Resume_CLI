@@ -1,0 +1,12 @@
+{
+  "overall_score": 75,
+  "skill_score": 80,
+  "experience_score": 70,
+  "education_score": 100,
+  "comment": "候选人具备扎实的前端技能（React、Node.js）和一定的后端经验（Python、Golang未明确提及，但项目中有Node.js后端开发），学历符合要求。但缺乏专有云项目经验，且工作经历中有一段短期任职，稳定性需关注。",
+  "interview_questions": [
+    "请详细描述你在Node.js后端开发中的具体职责和使用的技术栈，是否有使用Python或Golang的经验？",
+    "你是否有专有云相关的项目经验？如果没有，你如何快速学习并适应专有云环境？",
+    "在易网向数字科技公司的工作时间较短，是什么原因导致你离开？"
+  ]
+}

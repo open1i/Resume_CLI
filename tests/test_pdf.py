@@ -10,7 +10,7 @@ import pytest
 from resume_cli.exceptions import PDFError
 from resume_cli.pdf import extract_text
 
-SAMPLE_PDF = Path("tests/fixtures/附件简历-李子威-ai前端开发-5年.pdf")
+SAMPLE_PDF = Path("tests/fixtures/resume-demo.pdf")
 
 
 def test_file_not_found() -> None:
