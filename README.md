@@ -6,18 +6,46 @@ AI 驱动的简历解析与 JD 匹配评分命令行工具。
 
 ---
 
+## 快速开始
+
+```bash
+# 1. 克隆仓库
+git clone https://github.com/open1i/Resume_CLI.git
+cd Resume_CLI
+
+# 2. 创建虚拟环境并安装依赖
+python -m venv venv && source venv/bin/activate
+pip install -e .
+
+# 3. 配置 API Key
+cp .env.example .env
+# 编辑 .env，填入你的 OPENAI_API_KEY
+
+# 4. 验证安装
+resume-cli --help
+```
+
+**没有 API Key？用 `--mock` 跑完整流程：**
+
+```bash
+resume-cli extract resume.pdf --mock
+resume-cli score resume.pdf --jd jd.txt --mock
+```
+
+---
+
 ## 技术选型
 
-| 组件 | 选型 | 原因 |
-|------|------|------|
-| 语言 | Python 3.11+ | 类型系统完善，AI 生态丰富 |
-| CLI 框架 | click | 声明式参数、自动 --help |
-| PDF 解析 | pdfplumber | 文字提取准确，API 简洁 |
-| AI 调用 | openai SDK | 兼容 OpenAI 协议，支持 DeepSeek 等模型 |
-| 数据校验 | pydantic v2 | JSON → 强类型模型，字段校验 |
-| 日志 | loguru | 结构化彩色日志，一行配置 |
-| Lint/Format | ruff | 兼具 lint 和 format，速度快 |
-| 类型检查 | mypy strict | 严格模式，覆盖全部模块 |
+| 组件        | 选型         | 原因                                   |
+| ----------- | ------------ | -------------------------------------- |
+| 语言        | Python 3.11+ | 类型系统完善，AI 生态丰富              |
+| CLI 框架    | click        | 声明式参数、自动 --help                |
+| PDF 解析    | pdfplumber   | 文字提取准确，API 简洁                 |
+| AI 调用     | openai SDK   | 兼容 OpenAI 协议，支持 DeepSeek 等模型 |
+| 数据校验    | pydantic v2  | JSON → 强类型模型，字段校验            |
+| 日志        | loguru       | 结构化彩色日志，一行配置               |
+| Lint/Format | ruff         | 兼具 lint 和 format，速度快            |
+| 类型检查    | mypy strict  | 严格模式，覆盖全部模块                 |
 
 ---
 
@@ -85,13 +113,13 @@ OPENAI_BASE_URL=https://api.deepseek.com/v1
 OPENAI_MODEL=deepseek-chat
 ```
 
-| 变量 | 说明 | 默认值 |
-|------|------|--------|
-| `OPENAI_API_KEY` | API Key（必填） | — |
-| `OPENAI_BASE_URL` | 自定义 API 地址，不填则走 OpenAI 官方 | — |
-| `OPENAI_MODEL` | 模型名称 | `gpt-4o-mini` |
-| `AI_TIMEOUT` | 请求超时秒数 | `30` |
-| `LOG_LEVEL` | 日志级别 | `INFO` |
+| 变量              | 说明                                  | 默认值        |
+| ----------------- | ------------------------------------- | ------------- |
+| `OPENAI_API_KEY`  | API Key（必填）                       | —             |
+| `OPENAI_BASE_URL` | 自定义 API 地址，不填则走 OpenAI 官方 | —             |
+| `OPENAI_MODEL`    | 模型名称                              | `gpt-4o-mini` |
+| `AI_TIMEOUT`      | 请求超时秒数                          | `30`          |
+| `LOG_LEVEL`       | 日志级别                              | `INFO`        |
 
 ---
 
@@ -111,8 +139,8 @@ resume-cli parse resume.pdf
 
 ```json
 {
-  "char_count": 3687,
-  "text": "李子威 - 前端开发工程师\n男/1998.10 ..."
+    "char_count": 3687,
+    "text": "张三 - 前端开发工程师\n男/1998.10 ..."
 }
 ```
 
@@ -132,22 +160,31 @@ resume-cli extract resume.pdf
 
 ```json
 {
-  "name": "李子威",
-  "phone": "15235803633",
-  "email": "li1348313766@163.com",
-  "city": "",
-  "education": [
-    {
-      "school": "沈阳工业大学",
-      "major": "计算机科学与技术",
-      "degree": "本科",
-      "graduation_time": "2020.6"
-    }
-  ],
-  "skills": [
-    "React", "Vue", "Taro", "UniApp", "Webpack", "Vite",
-    "LangChain", "LangGraph", "Node.js", "TypeScript", "Next.js"
-  ]
+    "name": "张三",
+    "phone": "15235803633",
+    "email": "li1348313766@163.com",
+    "city": "",
+    "education": [
+        {
+            "school": "xx大学",
+            "major": "计算机科学与技术",
+            "degree": "本科",
+            "graduation_time": "2020.6"
+        }
+    ],
+    "skills": [
+        "React",
+        "Vue",
+        "Taro",
+        "UniApp",
+        "Webpack",
+        "Vite",
+        "LangChain",
+        "LangGraph",
+        "Node.js",
+        "TypeScript",
+        "Next.js"
+    ]
 }
 ```
 
@@ -167,16 +204,16 @@ resume-cli score resume.pdf --jd jd.txt
 
 ```json
 {
-  "overall_score": 75,
-  "skill_score": 80,
-  "experience_score": 70,
-  "education_score": 100,
-  "comment": "候选人具备扎实的前端技能（React、Node.js）和全栈开发经验，学历符合要求。但后端语言仅提及 Node.js，未明确使用 Python 或 Golang；缺乏专有云项目经验。整体匹配度良好，关键技能有差距。",
-  "interview_questions": [
-    "请详细描述你使用 Python 或 Golang 进行后端开发的具体项目经验。",
-    "你是否有专有云（如阿里云专有云、华为云 Stack）相关的项目经验？",
-    "在易网向数字科技公司的短期任职中，你的主要工作内容和离职原因是什么？"
-  ]
+    "overall_score": 75,
+    "skill_score": 80,
+    "experience_score": 70,
+    "education_score": 100,
+    "comment": "候选人具备扎实的前端技能（React、Node.js）和全栈开发经验，学历符合要求。但后端语言仅提及 Node.js，未明确使用 Python 或 Golang；缺乏专有云项目经验。整体匹配度良好，关键技能有差距。",
+    "interview_questions": [
+        "请详细描述你使用 Python 或 Golang 进行后端开发的具体项目经验。",
+        "你是否有专有云（如阿里云专有云、华为云 Stack）相关的项目经验？",
+        "在xxx公司的短期任职中，你的主要工作内容和离职原因是什么？"
+    ]
 }
 ```
 
@@ -184,12 +221,12 @@ resume-cli score resume.pdf --jd jd.txt
 
 ### 通用选项
 
-| 选项 | 说明 |
-|------|------|
-| `--mock` | 返回固定 mock 数据，无需 API Key，适合演示 |
-| `-o / --output <file>` | 将 JSON 结果同时保存到文件 |
-| `-v / --verbose` | 输出 debug 日志（模型、耗时、token 数） |
-| `--help` | 查看帮助 |
+| 选项                   | 说明                                       |
+| ---------------------- | ------------------------------------------ |
+| `--mock`               | 返回固定 mock 数据，无需 API Key，适合演示 |
+| `-o / --output <file>` | 将 JSON 结果同时保存到文件                 |
+| `-v / --verbose`       | 输出 debug 日志（模型、耗时、token 数）    |
+| `--help`               | 查看帮助                                   |
 
 ---
 
