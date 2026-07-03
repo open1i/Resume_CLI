@@ -20,6 +20,16 @@ __all__ = ["main"]
 _LOG_FMT = "<green>{time:HH:mm:ss}</green> | <level>{level}</level> | {message}"
 
 
+def _progress(msg: str, pct: int) -> None:
+    """Print a progress bar to stderr, overwriting the current line."""
+    bar_len = 25
+    filled = bar_len * pct // 100
+    bar = "█" * filled + "░" * (bar_len - filled)
+    click.echo(f"\r[{bar}] {pct:3d}%  {msg}", nl=False, err=True)
+    if pct == 100:
+        click.echo("", err=True)
+
+
 def _configure_logging(verbose: bool) -> None:
     logger.remove()
     level = "DEBUG" if verbose else "WARNING"
@@ -62,12 +72,15 @@ def main() -> None:
 def parse(pdf_path: str, output: str | None, verbose: bool) -> None:
     """Extract raw text from a PDF resume."""
     _configure_logging(verbose)
+    _progress("Reading PDF...", 0)
     try:
         text = extract_text(pdf_path)
     except PDFError as e:
+        click.echo("", err=True)
         _abort(str(e))
         return
 
+    _progress("Done", 100)
     result = {"char_count": len(text), "text": text}
     _write_output(result, output)
 
@@ -81,12 +94,16 @@ def extract(pdf_path: str, output: str | None, mock: bool, verbose: bool) -> Non
     """Extract structured info from a PDF resume using AI."""
     _configure_logging(verbose)
     try:
+        _progress("Reading PDF...", 0)
         text = extract_text(pdf_path)
+        _progress("Calling AI...", 50)
         info = extract_resume(text, mock=mock)
     except (PDFError, AIError, ValidationError) as e:
+        click.echo("", err=True)
         _abort(str(e))
         return
 
+    _progress("Done", 100)
     _write_output(info.model_dump(), output)
 
 
@@ -100,11 +117,16 @@ def score(pdf_path: str, jd: str, output: str | None, mock: bool, verbose: bool)
     """Score a resume against a job description using AI."""
     _configure_logging(verbose)
     try:
+        _progress("Reading JD...", 0)
         jd_text = _read_jd(jd)
+        _progress("Reading PDF...", 33)
         resume_text = extract_text(pdf_path)
+        _progress("Scoring with AI...", 66)
         result = score_resume(resume_text, jd_text, mock=mock)
     except (PDFError, JDError, AIError, ValidationError) as e:
+        click.echo("", err=True)
         _abort(str(e))
         return
 
+    _progress("Done", 100)
     _write_output(result.model_dump(), output)
